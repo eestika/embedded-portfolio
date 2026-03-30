@@ -1,0 +1,10 @@
+#ifndef CONFIG_H
+#define CONFIG_H
+
+#define SRM_DEFAULT_DEVICE "/dev/ttyUSB0"
+#define SRM_DEFAULT_BAUDRATE 115200
+
+#define SRM_RX_LINE_MAX 128
+#define SRM_DEFAULT_TIMEOUT_MS 2000
+
+#endif /* CONFIG_H */

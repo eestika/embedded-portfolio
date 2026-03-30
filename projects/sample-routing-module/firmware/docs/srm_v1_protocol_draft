@@ -1,0 +1,360 @@
+# SRM v1 Protocol Draft
+
+## English Version
+
+### Purpose
+
+SRM (Simple Routing Module) v1 is a lightweight binary protocol designed for communication between a master node (typically Raspberry Pi) and one or more slave nodes (typically STM32 boards).
+
+The protocol is designed to be:
+
+* Simple to implement
+* Easy to debug
+* Expandable for future peripherals and nodes
+* Independent from the physical transport layer
+* Compatible with RS485, UART, USB serial, TCP tunnels, and future transports
+
+---
+
+## Design Goals
+
+* Support one master and multiple slave nodes
+* Support node addressing
+* Support request/response model
+* Support ACK/NACK and retries
+* Support future expansion
+* Keep parser logic simple on STM32
+* Allow easy debugging through ASCII tools
+
+---
+
+## Node Roles
+
+* Master node: Raspberry Pi
+* Slave nodes: STM32 modules
+
+### Suggested Node IDs
+
+| Node ID     | Meaning                      |
+| ----------- | ---------------------------- |
+| 0x00        | Invalid / Reserved           |
+| 0x01        | Raspberry Master             |
+| 0x10 - 0x7F | Slave Nodes                  |
+| 0xF0 - 0xFE | Service / Bootloader / Debug |
+| 0xFF        | Broadcast                    |
+
+Example:
+
+* Slave1 = 0x10
+* Slave2 = 0x11
+* LCD Module = 0x20
+* Stepper Module = 0x30
+
+---
+
+## Frame Format
+
+```text
+SOF | VER | FLAGS | SRC | DST | CMD | SEQ | LEN | PAYLOAD | CRC16
+```
+
+### Field Description
+
+| Field   | Size        | Description                                        |
+| ------- | ----------- | -------------------------------------------------- |
+| SOF     | 1 byte      | Start of Frame, fixed value 0xAA                   |
+| VER     | 1 byte      | Protocol version, currently 0x01                   |
+| FLAGS   | 1 byte      | Frame flags                                        |
+| SRC     | 1 byte      | Source node ID                                     |
+| DST     | 1 byte      | Destination node ID                                |
+| CMD     | 1 byte      | Command ID                                         |
+| SEQ     | 1 byte      | Sequence number                                    |
+| LEN     | 1 byte      | Payload length                                     |
+| PAYLOAD | 0-255 bytes | Command-specific data                              |
+| CRC16   | 2 bytes     | CRC16-CCITT over the entire frame except CRC field |
+
+Recommended maximum payload for v1:
+
+* 64 bytes
+
+---
+
+## Flags
+
+| Bit | Name         | Meaning                   |
+| --- | ------------ | ------------------------- |
+| 0   | ACK_REQUIRED | Receiver must acknowledge |
+| 1   | IS_ACK       | This frame is an ACK      |
+| 2   | IS_NACK      | This frame is a NACK      |
+| 3   | IS_RESPONSE  | This frame is a response  |
+| 4   | BROADCAST    | Broadcast frame           |
+| 5-7 | Reserved     | Future use                |
+
+---
+
+## CRC
+
+SRM v1 uses:
+
+* CRC16-CCITT-FALSE
+* Polynomial: 0x1021
+* Initial value: 0xFFFF
+
+---
+
+## Error Codes
+
+| Code | Meaning         |
+| ---- | --------------- |
+| 0x01 | CRC Error       |
+| 0x02 | Unknown Command |
+| 0x03 | Invalid Length  |
+| 0x04 | Invalid Payload |
+| 0x05 | Busy            |
+| 0x06 | Not Supported   |
+| 0x07 | Internal Error  |
+| 0x08 | Timeout         |
+
+---
+
+## Suggested Command Map
+
+| Range       | Purpose                             |
+| ----------- | ----------------------------------- |
+| 0x00 - 0x1F | Core Protocol                       |
+| 0x20 - 0x3F | GPIO / LED / Generic Control        |
+| 0x40 - 0x5F | I2C / EEPROM / LCD                  |
+| 0x60 - 0x7F | Motion / Stepper / Actuator         |
+| 0x80 - 0xBF | Device Specific                     |
+| 0xC0 - 0xFF | Reserved / Bootloader / Diagnostics |
+
+### Core Commands
+
+| CMD  | Name                 |
+| ---- | -------------------- |
+| 0x01 | PING                 |
+| 0x02 | GET_INFO             |
+| 0x03 | GET_STATUS           |
+| 0x04 | RESET_NODE           |
+| 0x05 | SET_NODE_ID          |
+| 0x06 | GET_PROTOCOL_VERSION |
+
+---
+
+## Example PING Request
+
+```text
+AA 01 01 01 10 01 22 00 CRC_L CRC_H
+```
+
+Meaning:
+
+* Master 0x01 sends PING to slave 0x10
+* ACK required
+* Sequence number 0x22
+
+---
+
+# SRM v1 Protocol Draft
+
+## Versione Italiana
+
+### Scopo
+
+SRM (Simple Routing Module) v1 è un protocollo binario leggero progettato per la comunicazione tra un nodo master (tipicamente Raspberry Pi) e uno o più nodi slave (tipicamente schede STM32).
+
+Il protocollo è progettato per essere:
+
+* Semplice da implementare
+* Facile da debuggare
+* Espandibile per periferiche e nodi futuri
+* Indipendente dal livello fisico di trasporto
+* Compatibile con RS485, UART, seriale USB, tunnel TCP e futuri trasporti
+
+---
+
+## Obiettivi di Progetto
+
+* Supportare un master e più slave
+* Supportare indirizzamento dei nodi
+* Supportare request/response
+* Supportare ACK/NACK e retry
+* Supportare espansioni future
+* Mantenere semplice il parser STM32
+* Permettere debug facile tramite tool ASCII
+
+---
+
+## Ruoli dei Nodi
+
+* Nodo master: Raspberry Pi
+* Nodi slave: moduli STM32
+
+### Node ID suggeriti
+
+| Node ID     | Significato                   |
+| ----------- | ----------------------------- |
+| 0x00        | Non valido / Riservato        |
+| 0x01        | Raspberry Master              |
+| 0x10 - 0x7F | Nodi Slave                    |
+| 0xF0 - 0xFE | Servizio / Bootloader / Debug |
+| 0xFF        | Broadcast                     |
+
+---
+
+## Formato del Frame
+
+```text
+SOF | VER | FLAGS | SRC | DST | CMD | SEQ | LEN | PAYLOAD | CRC16
+```
+
+### Descrizione Campi
+
+| Campo   | Dimensione | Descrizione                           |
+| ------- | ---------- | ------------------------------------- |
+| SOF     | 1 byte     | Start of Frame, valore fisso 0xAA     |
+| VER     | 1 byte     | Versione protocollo, attualmente 0x01 |
+| FLAGS   | 1 byte     | Flag del frame                        |
+| SRC     | 1 byte     | Node ID sorgente                      |
+| DST     | 1 byte     | Node ID destinazione                  |
+| CMD     | 1 byte     | ID comando                            |
+| SEQ     | 1 byte     | Numero di sequenza                    |
+| LEN     | 1 byte     | Lunghezza payload                     |
+| PAYLOAD | 0-255 byte | Dati specifici del comando            |
+| CRC16   | 2 byte     | CRC16-CCITT                           |
+
+Payload massimo consigliato per v1:
+
+* 64 byte
+
+---
+
+## Flag
+
+| Bit | Nome         | Significato                 |
+| --- | ------------ | --------------------------- |
+| 0   | ACK_REQUIRED | Serve ACK                   |
+| 1   | IS_ACK       | Questo frame è un ACK       |
+| 2   | IS_NACK      | Questo frame è un NACK      |
+| 3   | IS_RESPONSE  | Questo frame è una risposta |
+| 4   | BROADCAST    | Frame broadcast             |
+| 5-7 | Reserved     | Uso futuro                  |
+
+---
+
+## CRC
+
+SRM v1 utilizza:
+
+* CRC16-CCITT-FALSE
+* Polinomio: 0x1021
+* Valore iniziale: 0xFFFF
+
+---
+
+## Codici Errore
+
+| Codice | Significato          |
+| ------ | -------------------- |
+| 0x01   | Errore CRC           |
+| 0x02   | Comando sconosciuto  |
+| 0x03   | Lunghezza non valida |
+| 0x04   | Payload non valido   |
+| 0x05   | Nodo occupato        |
+| 0x06   | Non supportato       |
+| 0x07   | Errore interno       |
+| 0x08   | Timeout              |
+
+---
+
+# SRM v1 Protocol Draft
+
+## Eesti Versioon
+
+### Eesmärk
+
+SRM (Simple Routing Module) v1 on kerge binaarne protokoll, mis on mõeldud suhtluseks master-seadme (tavaliselt Raspberry Pi) ja ühe või mitme slave-seadme (tavaliselt STM32 moodulid) vahel.
+
+Protokoll on loodud olema:
+
+* Lihtne implementeerida
+* Lihtne debugida
+* Tulevikus laiendatav
+* Füüsilisest transpordikihist sõltumatu
+* Ühilduv RS485, UART, USB seriali, TCP tunnelite ja tulevaste lahendustega
+
+---
+
+## Disaini Eesmärgid
+
+* Toetada ühte masterit ja mitut slave-seadet
+* Toetada seadmete aadresseerimist
+* Toetada request/response mudelit
+* Toetada ACK/NACK ja retry mehhanismi
+* Toetada tulevasi laiendusi
+* Hoida STM32 parser võimalikult lihtsana
+* Võimaldada lihtsat ASCII debugimist
+
+---
+
+## Node ID-d
+
+| Node ID     | Tähendus                    |
+| ----------- | --------------------------- |
+| 0x00        | Vigane / Reserveeritud      |
+| 0x01        | Raspberry Master            |
+| 0x10 - 0x7F | Slave seadmed               |
+| 0xF0 - 0xFE | Teenus / Bootloader / Debug |
+| 0xFF        | Broadcast                   |
+
+---
+
+## Kaadri Formaat
+
+```text
+SOF | VER | FLAGS | SRC | DST | CMD | SEQ | LEN | PAYLOAD | CRC16
+```
+
+### Väljade Kirjeldus
+
+| Väli    | Suurus      | Kirjeldus                        |
+| ------- | ----------- | -------------------------------- |
+| SOF     | 1 bait      | Kaadri algus, väärtus 0xAA       |
+| VER     | 1 bait      | Protokolli versioon, hetkel 0x01 |
+| FLAGS   | 1 bait      | Kaadri lipud                     |
+| SRC     | 1 bait      | Saatja node ID                   |
+| DST     | 1 bait      | Vastuvõtja node ID               |
+| CMD     | 1 bait      | Käsu ID                          |
+| SEQ     | 1 bait      | Järjekorranumber                 |
+| LEN     | 1 bait      | Payload pikkus                   |
+| PAYLOAD | 0-255 baiti | Käsuspetsiifilised andmed        |
+| CRC16   | 2 baiti     | CRC16-CCITT                      |
+
+Soovitatav maksimaalne payload v1 jaoks:
+
+* 64 baiti
+
+---
+
+## CRC
+
+SRM v1 kasutab:
+
+* CRC16-CCITT-FALSE
+* Polünoom: 0x1021
+* Algväärtus: 0xFFFF
+
+---
+
+## Veakoodid
+
+| Kood | Tähendus        |
+| ---- | --------------- |
+| 0x01 | CRC viga        |
+| 0x02 | Tundmatu käsk   |
+| 0x03 | Vigane pikkus   |
+| 0x04 | Vigane payload  |
+| 0x05 | Hõivatud        |
+| 0x06 | Ei ole toetatud |
+| 0x07 | Sisemine viga   |
+| 0x08 | Timeout         |

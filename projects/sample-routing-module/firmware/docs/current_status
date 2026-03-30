@@ -1,0 +1,24 @@
+# Current Status
+
+## Validated
+- STM32 USART3 debug working
+- STM32 USART1 application channel working
+- Raspberry Pi ↔ RS485 ↔ STM32 communication working
+- ASCII protocol validated:
+  - PING
+  - STATUS
+  - LED ON
+  - LED OFF
+  - HELP
+- SRM v1 binary protocol draft defined
+- I2C1 configured on STM32 but not yet used
+
+## Pending
+- LCD1602 integration
+- EEPROM integration
+- Binary frame parser
+- CRC16 implementation
+- ACK/NACK implementation
+- Multi-node support
+- Raspberry master modular architecture
+- STM32 modular protocol layer

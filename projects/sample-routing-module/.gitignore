@@ -1,0 +1,17 @@
+Debug/
+Release/
+build/
+.settings/
+.metadata/
+
+*.o
+*.d
+*.su
+*.cyclo
+*.list
+*.map
+*.mk
+*.elf
+*.bin
+*.hex
+*.launch
