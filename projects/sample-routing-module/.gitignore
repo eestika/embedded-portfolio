@@ -15,3 +15,13 @@ build/
 *.bin
 *.hex
 *.launch
+
+firmware/Raspberry_PI4_modelB/srm_rpi_*
+
+*.exe
+*.out
+*.tmp
+*.log
+
+.vscode/
+.idea/

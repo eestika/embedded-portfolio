@@ -9,10 +9,14 @@ extern "C" {
 #include <stdint.h>
 
 void rs485_if_init(void);
+bool rs485_if_is_de_configured(void);
+
 bool rs485_if_send_bytes(const uint8_t *data, uint16_t len);
 bool rs485_if_send_string(const char *str);
 bool rs485_if_read_byte(uint8_t *byte);
-bool rs485_if_is_de_configured(void);
+
+/* New: process received bytes outside ISR/callback */
+void rs485_if_process_rx(void);
 
 #ifdef __cplusplus
 }

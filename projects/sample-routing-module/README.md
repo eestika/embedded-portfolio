@@ -1,217 +1,227 @@
 # Sample Routing Module
 
-A portfolio embedded project designed to simulate an industrial / medical-style communication and control node.
+## English
 
-The project is built to practice and demonstrate:
+### Project Overview
 
-- Embedded C
-- modular firmware architecture
-- UART and RS485 communication
-- I2C peripherals
-- EEPROM usage
-- LCD diagnostics
-- master / slave communication
-- protocol design
-- state machines
-- struct / union usage
-- pointer-based data handling and parsing
+Sample Routing Module is a modular embedded communication project based on:
 
----
+* Raspberry Pi 4 Model B acting as master node
+* STM32 NUCLEO-F207 acting as slave node
+* RS485 physical layer
+* Custom SRM binary protocol
+* CRC16 frame validation
+* Ring buffer RX handling
+* Modular parser and dispatcher architecture
 
-# Project Goal
+The goal of the project is to build a scalable embedded communication framework that can later support:
 
-The goal of this project is to create a realistic embedded demo in which:
-
-- a Raspberry Pi 4 acts as a Linux master/controller
-- an STM32 NUCLEO-F207 acts as an embedded communication and control node
-- external peripherals are connected to the STM32
-- communication is performed over UART / RS485
-- local diagnostics are shown on LCD
-- configuration or status data can be stored in EEPROM
-
-This project is intended both as:
-
-- a learning platform
-- a portfolio project for embedded job interviews
+* Multiple slave nodes
+* LCD modules
+* EEPROM storage
+* I2C sensors
+* CAN bus
+* WiFi or Ethernet expansion
+* Distributed actuator and sensor control
 
 ---
 
-# Planned Architecture
+### Current Milestone
 
-## Master Side
-- Raspberry Pi 4
-- C application running on Linux
-- USB to RS485 Waveshare interface
-- command transmission
-- status reception
-- protocol testing and diagnostics
+The current implementation supports:
 
-## Embedded Node
-- STM32 NUCLEO-F207
-- UART / RS485 communication
-- I2C peripheral integration
-- LCD1602 display
-- AT24C128 EEPROM
-- future actuator and sensor expansion
+* Bidirectional RS485 communication
+* Binary SRM frames
+* CRC16 validation
+* RX ring buffer
+* Frame parser
+* Command dispatcher
+* Request/response protocol
+* Source and destination addressing
+* Sequence numbers
+* Raspberry command menu
+* STM32 LED ON / LED OFF control
 
----
+Currently implemented commands:
 
-# Hardware
-
-## Main Boards
-- Raspberry Pi 4 Model B
-- STM32 NUCLEO-F207ZG
-
-## Communication
-- Waveshare USB TO RS485/422
-- MikroE RS485-related documentation and modules collected in docs
-
-## Peripherals
-- LCD1602 I2C display
-- AT24C128 / AT24C256 EEPROM
-- ULN2003 driver documentation collected for future actuator tests
-- future servo / actuator integration planned
+* PING_REQ / PING_RSP
+* LED_ON_REQ / LED_ON_RSP
+* LED_OFF_REQ / LED_OFF_RSP
 
 ---
 
-# Current Focus
+### Example Communication Flow
 
-The current technical focus of this project is:
+1. Raspberry sends PING_REQ
+2. STM32 validates frame and CRC
+3. STM32 dispatches the command
+4. STM32 sends PING_RSP
+5. Raspberry validates response and CRC
 
-- define clean project architecture
-- organize documentation and datasheets
-- build communication-first design
-- practice concepts useful for embedded interviews:
-  - struct
-  - union
-  - pointer arithmetic
-  - casting
-  - frame parsing
-  - RS232 / UART fundamentals
-  - RS485 communication
-  - state machine design
-  - EEPROM read/write
-  - LCD diagnostics
+The same mechanism is now used for LED ON and LED OFF commands.
 
 ---
 
-# Repository Structure
+### Planned Next Steps
 
-```text
-sample-routing-module/
-├── docs/
-│   ├── LCD1602/
-│   ├── Mikroe/
-│   ├── NUCLEO F207/
-│   ├── Raspberry 4 model B/
-│   ├── Uln2003/
-│   └── Waveshire/
-├── firmware/
-├── hardware/
-├── images/
-└── README.md
+* STATUS_REQ / STATUS_RSP
+* Uptime reporting
+* LED state reporting
+* EEPROM integration
+* LCD integration
+* Multi-slave addressing
+* CAN bus support
+* WiFi gateway support
+* Integration with rover and future Nordic Node architecture
 
 ---
 
-# Planned firmware organization
+## Italiano
 
-A possible future structure is:
+### Panoramica Progetto
 
-firmware/
-├── raspberry_master/
-│   ├── src/
-│   ├── include/
-│   └── README.md
-│
-└── stm32_node/
-    ├── Core/
-    ├── Drivers/
-    ├── App/
-    ├── Protocol/
-    ├── Peripherals/
-    └── README.md
-	
-	Communication Plan
+Sample Routing Module è un progetto embedded modulare basato su:
 
-The project is intended to evolve around a simple packet-based protocol.
+* Raspberry Pi 4 Model B come nodo master
+* STM32 NUCLEO-F207 come nodo slave
+* Livello fisico RS485
+* Protocollo binario SRM personalizzato
+* Validazione frame con CRC16
+* Gestione RX tramite ring buffer
+* Architettura modulare con parser e dispatcher
 
-Typical fields under evaluation:
+L'obiettivo del progetto è costruire un framework embedded scalabile che in futuro possa supportare:
 
-header
-command
-payload length
-payload bytes
-checksum / CRC
+* Più nodi slave
+* Moduli LCD
+* Memorie EEPROM
+* Sensori I2C
+* CAN bus
+* Espansione WiFi o Ethernet
+* Controllo distribuito di sensori e attuatori
 
-This protocol will be useful to practice:
+---
 
-raw byte handling
-buffer parsing
-struct / union overlay
-endian awareness
-master / slave state transitions
-Peripheral Plan
-LCD1602
+### Milestone Attuale
 
-Used for:
+L'implementazione attuale supporta:
 
-local status display
-error display
-communication diagnostics
-mode indication
-EEPROM
+* Comunicazione bidirezionale RS485
+* Frame binari SRM
+* Validazione CRC16
+* Ring buffer RX
+* Parser dei frame
+* Dispatcher dei comandi
+* Protocollo request/response
+* Indirizzamento source/destination
+* Sequence number
+* Menu comandi lato Raspberry
+* Controllo LED ON / LED OFF lato STM32
 
-Used for:
+Comandi attualmente implementati:
 
-configuration persistence
-address/config storage
-parameter save/load
-future fault/event logging
-RS485
+* PING_REQ / PING_RSP
+* LED_ON_REQ / LED_ON_RSP
+* LED_OFF_REQ / LED_OFF_RSP
 
-Used for:
+---
 
-robust serial communication
-master / node testing
-protocol framing and validation
-Why This Project Matters
+### Esempio di Flusso Comunicazione
 
-This project is intentionally designed to train skills that are highly relevant in embedded and industrial environments:
+1. Raspberry invia PING_REQ
+2. STM32 valida frame e CRC
+3. STM32 esegue il dispatch del comando
+4. STM32 invia PING_RSP
+5. Raspberry valida la risposta e il CRC
 
-hardware/software integration
-debugging on real targets
-reading datasheets
-designing simple but solid protocols
-building modular embedded software
-working with Linux + MCU mixed systems
+Lo stesso meccanismo viene ora utilizzato anche per i comandi LED ON e LED OFF.
 
-It is also directly aligned with preparation for junior embedded technical interviews.
+---
 
-Status
-Current Status
-project created
-documentation folder prepared
-datasheets collected
-portfolio repository published
-architecture under definition
-Next Steps
-define exact system topology
-define firmware folder structure
-define first protocol draft
-implement Raspberry master in C
-implement STM32 communication node
-test UART first
-move to RS485
-add LCD and EEPROM support
-Notes
+### Prossimi Step Previsti
 
-This project is under active development.
+* STATUS_REQ / STATUS_RSP
+* Report uptime
+* Report stato LED
+* Integrazione EEPROM
+* Integrazione LCD
+* Indirizzamento multi-slave
+* Supporto CAN bus
+* Supporto gateway WiFi
+* Integrazione con rover e futura architettura Nordic Node
 
-Some design choices may evolve as hardware and firmware are tested on real boards.
+---
 
-The emphasis is on:
+## Eesti
 
-learning correctly
-documenting clearly
-building reusable embedded knowledge
-producing a project that is technically credible and portfolio-ready
+### Projekti Ülevaade
+
+Sample Routing Module on modulaarne embedded-projekt, mis põhineb:
+
+* Raspberry Pi 4 Model B kui master-seade
+* STM32 NUCLEO-F207 kui slave-seade
+* RS485 füüsiline kiht
+* Kohandatud SRM binaarprotokoll
+* CRC16 kontroll
+* RX ring buffer
+* Modulaarne parseri ja dispatcher'i arhitektuur
+
+Projekti eesmärk on luua skaleeritav embedded-raamistik, mis toetab tulevikus:
+
+* Mitut slave-seadet
+* LCD mooduleid
+* EEPROM mälu
+* I2C sensoreid
+* CAN bus süsteemi
+* WiFi või Ethernet laiendust
+* Hajutatud sensorite ja aktuaatorite juhtimist
+
+---
+
+### Praegune Milestone
+
+Praegune versioon toetab:
+
+* Kahepoolset RS485 suhtlust
+* SRM binaarkaadreid
+* CRC16 kontrolli
+* RX ring bufferit
+* Kaadrite parserit
+* Käskude dispatcher'it
+* Request/response protokolli
+* Source/destination aadresse
+* Sequence number süsteemi
+* Raspberry käsumenüüd
+* STM32 LED ON / LED OFF juhtimist
+
+Praegu toetatud käsud:
+
+* PING_REQ / PING_RSP
+* LED_ON_REQ / LED_ON_RSP
+* LED_OFF_REQ / LED_OFF_RSP
+
+---
+
+### Näidis Sidevoog
+
+1. Raspberry saadab PING_REQ käsu
+2. STM32 kontrollib kaadrit ja CRC-d
+3. STM32 töötleb käsu
+4. STM32 saadab PING_RSP vastuse
+5. Raspberry kontrollib vastust ja CRC-d
+
+Sama mehhanismi kasutatakse nüüd ka LED ON ja LED OFF käskude jaoks.
+
+---
+
+### Järgmised Sammud
+
+* STATUS_REQ / STATUS_RSP
+* Uptime info
+* LED oleku info
+* EEPROM integratsioon
+* LCD integratsioon
+* Multi-slave aadressimine
+* CAN bus tugi
+* WiFi gateway tugi
+* Integratsioon roveri ja tulevase Nordic Node arhitektuuriga
