@@ -11,8 +11,9 @@ Sample Routing Module is a modular embedded communication project based on:
 * RS485 physical layer
 * Custom SRM binary protocol
 * CRC16 frame validation
-* Ring buffer RX handling
+* RX ring buffer handling
 * Modular parser and dispatcher architecture
+* LCD1602 I2C integration
 
 The goal of the project is to build a scalable embedded communication framework that can later support:
 
@@ -41,34 +42,74 @@ The current implementation supports:
 * Sequence numbers
 * Raspberry command menu
 * STM32 LED ON / LED OFF control
+* STM32 STATUS response
+* LCD1602 I2C driver
+* LCD clear command
+* LCD line 1 write command
+* LCD line 2 write command
 
 Currently implemented commands:
 
 * PING_REQ / PING_RSP
 * LED_ON_REQ / LED_ON_RSP
 * LED_OFF_REQ / LED_OFF_RSP
+* STATUS_REQ / STATUS_RSP
+* LCD_CLEAR_REQ / LCD_CLEAR_RSP
+* LCD_WRITE_LINE1_REQ / LCD_WRITE_LINE1_RSP
+* LCD_WRITE_LINE2_REQ / LCD_WRITE_LINE2_RSP
+
+STATUS_RSP currently returns:
+
+* LED state
+* System uptime in milliseconds
 
 ---
 
 ### Example Communication Flow
 
-1. Raspberry sends PING_REQ
+1. Raspberry sends LCD_WRITE_LINE1_REQ
 2. STM32 validates frame and CRC
 3. STM32 dispatches the command
-4. STM32 sends PING_RSP
-5. Raspberry validates response and CRC
+4. STM32 updates LCD line 1
+5. STM32 sends LCD_WRITE_LINE1_RSP
+6. Raspberry validates response and CRC
 
-The same mechanism is now used for LED ON and LED OFF commands.
+The same mechanism is also used for:
+
+* PING
+* LED control
+* STATUS reporting
+* LCD clear
+* LCD line 2 update
+
+---
+
+### Current Firmware Modules
+
+#### Raspberry Side
+
+* srm_protocol
+* srm_crc16
+* srm_menu
+* srm_test
+* rs485_if
+
+#### STM32 Side
+
+* srm_parser
+* srm_dispatcher
+* rs485_if
+* lcd
+* app_main
 
 ---
 
 ### Planned Next Steps
 
-* STATUS_REQ / STATUS_RSP
-* Uptime reporting
-* LED state reporting
+* Custom LCD text entry
+* LCD scrolling text
+* Custom LCD symbols
 * EEPROM integration
-* LCD integration
 * Multi-slave addressing
 * CAN bus support
 * WiFi gateway support
@@ -89,6 +130,7 @@ Sample Routing Module è un progetto embedded modulare basato su:
 * Validazione frame con CRC16
 * Gestione RX tramite ring buffer
 * Architettura modulare con parser e dispatcher
+* Integrazione LCD1602 I2C
 
 L'obiettivo del progetto è costruire un framework embedded scalabile che in futuro possa supportare:
 
@@ -117,34 +159,74 @@ L'implementazione attuale supporta:
 * Sequence number
 * Menu comandi lato Raspberry
 * Controllo LED ON / LED OFF lato STM32
+* Risposta STATUS lato STM32
+* Driver LCD1602 I2C
+* Comando clear LCD
+* Scrittura linea 1 LCD
+* Scrittura linea 2 LCD
 
 Comandi attualmente implementati:
 
 * PING_REQ / PING_RSP
 * LED_ON_REQ / LED_ON_RSP
 * LED_OFF_REQ / LED_OFF_RSP
+* STATUS_REQ / STATUS_RSP
+* LCD_CLEAR_REQ / LCD_CLEAR_RSP
+* LCD_WRITE_LINE1_REQ / LCD_WRITE_LINE1_RSP
+* LCD_WRITE_LINE2_REQ / LCD_WRITE_LINE2_RSP
+
+STATUS_RSP restituisce attualmente:
+
+* Stato LED
+* Uptime del sistema in millisecondi
 
 ---
 
 ### Esempio di Flusso Comunicazione
 
-1. Raspberry invia PING_REQ
+1. Raspberry invia LCD_WRITE_LINE1_REQ
 2. STM32 valida frame e CRC
 3. STM32 esegue il dispatch del comando
-4. STM32 invia PING_RSP
-5. Raspberry valida la risposta e il CRC
+4. STM32 aggiorna la linea 1 del display
+5. STM32 invia LCD_WRITE_LINE1_RSP
+6. Raspberry valida la risposta e il CRC
 
-Lo stesso meccanismo viene ora utilizzato anche per i comandi LED ON e LED OFF.
+Lo stesso meccanismo viene utilizzato anche per:
+
+* PING
+* Controllo LED
+* Report STATUS
+* Clear LCD
+* Aggiornamento linea 2 LCD
+
+---
+
+### Moduli Firmware Attuali
+
+#### Lato Raspberry
+
+* srm_protocol
+* srm_crc16
+* srm_menu
+* srm_test
+* rs485_if
+
+#### Lato STM32
+
+* srm_parser
+* srm_dispatcher
+* rs485_if
+* lcd
+* app_main
 
 ---
 
 ### Prossimi Step Previsti
 
-* STATUS_REQ / STATUS_RSP
-* Report uptime
-* Report stato LED
+* Inserimento testo LCD personalizzato
+* Testo LCD scorrevole
+* Simboli personalizzati LCD
 * Integrazione EEPROM
-* Integrazione LCD
 * Indirizzamento multi-slave
 * Supporto CAN bus
 * Supporto gateway WiFi
@@ -165,16 +247,7 @@ Sample Routing Module on modulaarne embedded-projekt, mis põhineb:
 * CRC16 kontroll
 * RX ring buffer
 * Modulaarne parseri ja dispatcher'i arhitektuur
-
-Projekti eesmärk on luua skaleeritav embedded-raamistik, mis toetab tulevikus:
-
-* Mitut slave-seadet
-* LCD mooduleid
-* EEPROM mälu
-* I2C sensoreid
-* CAN bus süsteemi
-* WiFi või Ethernet laiendust
-* Hajutatud sensorite ja aktuaatorite juhtimist
+* LCD1602 I2C integratsioon
 
 ---
 
@@ -193,35 +266,31 @@ Praegune versioon toetab:
 * Sequence number süsteemi
 * Raspberry käsumenüüd
 * STM32 LED ON / LED OFF juhtimist
+* STATUS vastuseid
+* LCD1602 I2C draiverit
+* LCD clear käsku
+* LCD line 1 kirjutamist
+* LCD line 2 kirjutamist
 
 Praegu toetatud käsud:
 
 * PING_REQ / PING_RSP
 * LED_ON_REQ / LED_ON_RSP
 * LED_OFF_REQ / LED_OFF_RSP
-
----
-
-### Näidis Sidevoog
-
-1. Raspberry saadab PING_REQ käsu
-2. STM32 kontrollib kaadrit ja CRC-d
-3. STM32 töötleb käsu
-4. STM32 saadab PING_RSP vastuse
-5. Raspberry kontrollib vastust ja CRC-d
-
-Sama mehhanismi kasutatakse nüüd ka LED ON ja LED OFF käskude jaoks.
+* STATUS_REQ / STATUS_RSP
+* LCD_CLEAR_REQ / LCD_CLEAR_RSP
+* LCD_WRITE_LINE1_REQ / LCD_WRITE_LINE1_RSP
+* LCD_WRITE_LINE2_REQ / LCD_WRITE_LINE2_RSP
 
 ---
 
 ### Järgmised Sammud
 
-* STATUS_REQ / STATUS_RSP
-* Uptime info
-* LED oleku info
+* LCD kohandatud tekst
+* LCD scrolling text
+* LCD custom symbols
 * EEPROM integratsioon
-* LCD integratsioon
 * Multi-slave aadressimine
 * CAN bus tugi
 * WiFi gateway tugi
-* Integratsioon roveri ja tulevase Nordic Node arhitektuuriga
+* Integratsioon roveri ja Nordic Node arhitektuuriga
