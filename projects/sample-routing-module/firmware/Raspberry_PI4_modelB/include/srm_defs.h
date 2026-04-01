@@ -18,7 +18,21 @@
 #define SRM_CMD_LED_OFF_REQ   0x12U
 #define SRM_CMD_LED_OFF_RSP   0x13U
 
+#define SRM_CMD_STATUS_REQ    0x20U
+#define SRM_CMD_STATUS_RSP    0x21U
+
+#define SRM_CMD_LCD_CLEAR_REQ 0x30U
+#define SRM_CMD_LCD_CLEAR_RSP 0x31U
+
+#define SRM_CMD_LCD_WRITE_REQ 0x32U
+#define SRM_CMD_LCD_WRITE_RSP 0x33U
+
 #define SRM_NODE_ID_SLAVE1    0x01U
 #define SRM_NODE_ID_MASTER    0x10U
+
+#define SRM_LED_STATE_OFF     0x00U
+#define SRM_LED_STATE_ON      0x01U
+
+#define SRM_LCD_MAX_TEXT_LEN  16U
 
 #endif /* SRM_DEFS_H */

@@ -7,11 +7,11 @@
 #include "srm_rx_parser.h"
 #include "srm_crc.h"
 #include "srm_defs.h"
+#include "srm_dispatcher.h"
 
-#include <string.h>
 #include <stdio.h>
-#include <stdbool.h>
 #include <stddef.h>
+#include <string.h>
 
 #define RS485_TX_TIMEOUT_MS    100U
 
@@ -54,138 +54,6 @@ static void rs485_print_frame_hex(const uint8_t *frame, uint16_t len)
     }
 
     debug_console_write_line("");
-}
-
-static bool rs485_send_srm_frame(uint8_t flags,
-                                 uint8_t src,
-                                 uint8_t dst,
-                                 uint8_t cmd,
-                                 uint8_t seq,
-                                 const uint8_t *payload,
-                                 uint8_t payload_len)
-{
-    uint8_t frame[SRM_MAX_FRAME_SIZE];
-    uint16_t crc;
-    uint16_t idx = 0U;
-    uint8_t i;
-
-    if (payload_len > SRM_MAX_PAYLOAD_LEN)
-    {
-        return false;
-    }
-
-    frame[idx++] = SRM_SOF;
-    frame[idx++] = SRM_VERSION;
-    frame[idx++] = flags;
-    frame[idx++] = src;
-    frame[idx++] = dst;
-    frame[idx++] = cmd;
-    frame[idx++] = seq;
-    frame[idx++] = payload_len;
-
-    for (i = 0U; i < payload_len; i++)
-    {
-        frame[idx++] = payload[i];
-    }
-
-    crc = srm_crc16_ccitt_false(&frame[1], (size_t)(7U + payload_len));
-
-    frame[idx++] = (uint8_t)((crc >> 8) & 0xFFU);
-    frame[idx++] = (uint8_t)(crc & 0xFFU);
-
-    return rs485_if_send_bytes(frame, idx);
-}
-
-static void rs485_dispatch_srm_frame(const uint8_t *frame, uint16_t len)
-{
-    uint8_t src;
-    uint8_t dst;
-    uint8_t cmd;
-    uint8_t seq;
-
-    (void)len;
-
-    if (frame == NULL)
-    {
-        return;
-    }
-
-    src = frame[3];
-    dst = frame[4];
-    cmd = frame[5];
-    seq = frame[6];
-
-    if (dst != SRM_NODE_ID_SLAVE1)
-    {
-        debug_console_write_line("SRM DISPATCH: frame not for this node");
-        return;
-    }
-
-    switch (cmd)
-    {
-        case SRM_CMD_PING_REQ:
-            debug_console_write_line("SRM DISPATCH: PING_REQ");
-
-            if (rs485_send_srm_frame(0U,
-                                     SRM_NODE_ID_SLAVE1,
-                                     src,
-                                     SRM_CMD_PING_RSP,
-                                     seq,
-                                     NULL,
-                                     0U))
-            {
-                debug_console_write_line("SRM TX: PING_RSP sent");
-            }
-            else
-            {
-                debug_console_write_line("SRM TX ERROR: PING_RSP failed");
-            }
-            break;
-
-        case SRM_CMD_LED_ON_REQ:
-            debug_console_write_line("SRM DISPATCH: LED_ON_REQ");
-            HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, GPIO_PIN_SET);
-
-            if (rs485_send_srm_frame(0U,
-                                     SRM_NODE_ID_SLAVE1,
-                                     src,
-                                     SRM_CMD_LED_ON_RSP,
-                                     seq,
-                                     NULL,
-                                     0U))
-            {
-                debug_console_write_line("SRM TX: LED_ON_RSP sent");
-            }
-            else
-            {
-                debug_console_write_line("SRM TX ERROR: LED_ON_RSP failed");
-            }
-            break;
-
-        case SRM_CMD_LED_OFF_REQ:
-            debug_console_write_line("SRM DISPATCH: LED_OFF_REQ");
-            HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, GPIO_PIN_RESET);
-
-            if (rs485_send_srm_frame(0U,
-                                     SRM_NODE_ID_SLAVE1,
-                                     src,
-                                     SRM_CMD_LED_OFF_RSP,
-                                     seq,
-                                     NULL,
-                                     0U))
-            {
-                debug_console_write_line("SRM TX: LED_OFF_RSP sent");
-            }
-            else
-            {
-                debug_console_write_line("SRM TX ERROR: LED_OFF_RSP failed");
-            }
-            break;
-
-        default:
-            debug_console_write_line("SRM DISPATCH: unsupported CMD");
-            break;
-    }
 }
 
 static void rs485_handle_srm_frame(const uint8_t *frame, uint16_t len)
@@ -236,7 +104,7 @@ static void rs485_handle_srm_frame(const uint8_t *frame, uint16_t len)
     if (crc_rx == crc_calc)
     {
         debug_console_write_line("SRM RX CRC: OK");
-        rs485_dispatch_srm_frame(frame, len);
+        srm_dispatcher_handle_frame(frame, len);
     }
     else
     {
@@ -261,6 +129,8 @@ void rs485_if_init(void)
     srm_rx_buffer_init(&s_rx_buffer);
     srm_rx_parser_init(&s_rx_parser);
     s_rx_overflow_count = 0U;
+
+    srm_dispatcher_init();
 
     rs485_set_rx_mode();
 

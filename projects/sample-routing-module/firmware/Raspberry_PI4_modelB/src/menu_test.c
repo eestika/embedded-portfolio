@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 #include <sys/types.h>
 
 #include "config.h"
@@ -19,7 +20,19 @@ static void print_frame_hex(const uint8_t *buf, size_t len)
     printf("\n");
 }
 
-static int send_and_receive(uint8_t cmd_req, uint8_t cmd_rsp_expected, uint8_t seq)
+static uint32_t decode_u32_be(const uint8_t *data)
+{
+    return ((uint32_t)data[0] << 24) |
+           ((uint32_t)data[1] << 16) |
+           ((uint32_t)data[2] << 8)  |
+           ((uint32_t)data[3]);
+}
+
+static int send_and_receive_payload(uint8_t cmd_req,
+                                    uint8_t cmd_rsp_expected,
+                                    uint8_t seq,
+                                    const uint8_t *payload,
+                                    uint8_t payload_len)
 {
     int fd;
     uint8_t tx_frame[SRM_MAX_FRAME_SIZE];
@@ -29,7 +42,7 @@ static int send_and_receive(uint8_t cmd_req, uint8_t cmd_rsp_expected, uint8_t s
     uint8_t byte;
     int count = 0;
     int total_len;
-    uint8_t payload_len;
+    uint8_t rx_payload_len;
     uint16_t crc_rx;
     uint16_t crc_calc;
 
@@ -42,8 +55,8 @@ static int send_and_receive(uint8_t cmd_req, uint8_t cmd_rsp_expected, uint8_t s
                         SRM_NODE_ID_SLAVE1,
                         cmd_req,
                         seq,
-                        NULL,
-                        0U) != 0)
+                        payload,
+                        payload_len) != 0)
     {
         printf("ERROR: build frame failed\n");
         return -1;
@@ -106,15 +119,15 @@ static int send_and_receive(uint8_t cmd_req, uint8_t cmd_rsp_expected, uint8_t s
         rx_frame[count++] = byte;
     }
 
-    payload_len = rx_frame[7];
-    if (payload_len > SRM_MAX_PAYLOAD_LEN)
+    rx_payload_len = rx_frame[7];
+    if (rx_payload_len > SRM_MAX_PAYLOAD_LEN)
     {
-        printf("ERROR: invalid payload length %u\n", payload_len);
+        printf("ERROR: invalid payload length %u\n", rx_payload_len);
         serial_port_close(fd);
         return -1;
     }
 
-    total_len = SRM_HEADER_SIZE + payload_len + SRM_CRC_SIZE;
+    total_len = SRM_HEADER_SIZE + rx_payload_len + SRM_CRC_SIZE;
 
     while (count < total_len)
     {
@@ -134,7 +147,7 @@ static int send_and_receive(uint8_t cmd_req, uint8_t cmd_rsp_expected, uint8_t s
 
     crc_rx = (uint16_t)(((uint16_t)rx_frame[total_len - 2] << 8) |
                         (uint16_t)rx_frame[total_len - 1]);
-    crc_calc = srm_crc16_ccitt_false(&rx_frame[1], (size_t)(7U + payload_len));
+    crc_calc = srm_crc16_ccitt_false(&rx_frame[1], (size_t)(7U + rx_payload_len));
 
     printf("Decoded RX:\n");
     printf("VER   : 0x%02X\n", rx_frame[1]);
@@ -165,8 +178,51 @@ static int send_and_receive(uint8_t cmd_req, uint8_t cmd_rsp_expected, uint8_t s
 
     printf("Expected response received.\n");
 
+    if ((rx_frame[5] == SRM_CMD_STATUS_RSP) && (rx_payload_len == 5U))
+    {
+        uint8_t led_state = rx_frame[8];
+        uint32_t uptime_ms = decode_u32_be(&rx_frame[9]);
+
+        printf("STATUS payload:\n");
+        printf("LED state  : %s\n", (led_state == SRM_LED_STATE_ON) ? "ON" : "OFF");
+        printf("Uptime ms  : %lu\n", (unsigned long)uptime_ms);
+    }
+
     serial_port_close(fd);
     return 0;
+}
+
+static int send_and_receive(uint8_t cmd_req, uint8_t cmd_rsp_expected, uint8_t seq)
+{
+    return send_and_receive_payload(cmd_req, cmd_rsp_expected, seq, NULL, 0U);
+}
+
+static int send_lcd_write(uint8_t row, uint8_t col, const char *text, uint8_t seq)
+{
+    uint8_t payload[3U + SRM_LCD_MAX_TEXT_LEN];
+    uint8_t text_len;
+
+    if (text == NULL)
+    {
+        return -1;
+    }
+
+    text_len = (uint8_t)strlen(text);
+    if (text_len > SRM_LCD_MAX_TEXT_LEN)
+    {
+        text_len = SRM_LCD_MAX_TEXT_LEN;
+    }
+
+    payload[0] = row;
+    payload[1] = col;
+    payload[2] = text_len;
+    memcpy(&payload[3], text, text_len);
+
+    return send_and_receive_payload(SRM_CMD_LCD_WRITE_REQ,
+                                    SRM_CMD_LCD_WRITE_RSP,
+                                    seq,
+                                    payload,
+                                    (uint8_t)(3U + text_len));
 }
 
 int main(void)
@@ -184,6 +240,10 @@ int main(void)
         printf("1) PING\n");
         printf("2) LED ON\n");
         printf("3) LED OFF\n");
+        printf("4) STATUS\n");
+        printf("5) LCD CLEAR\n");
+        printf("6) LCD WRITE LINE 1\n");
+        printf("7) LCD WRITE LINE 2\n");
         printf("q) QUIT\n");
         printf("Select: ");
 
@@ -203,6 +263,22 @@ int main(void)
         else if (choice[0] == '3')
         {
             (void)send_and_receive(SRM_CMD_LED_OFF_REQ, SRM_CMD_LED_OFF_RSP, seq++);
+        }
+        else if (choice[0] == '4')
+        {
+            (void)send_and_receive(SRM_CMD_STATUS_REQ, SRM_CMD_STATUS_RSP, seq++);
+        }
+        else if (choice[0] == '5')
+        {
+            (void)send_and_receive(SRM_CMD_LCD_CLEAR_REQ, SRM_CMD_LCD_CLEAR_RSP, seq++);
+        }
+        else if (choice[0] == '6')
+        {
+            (void)send_lcd_write(0U, 0U, "HELLO L1", seq++);
+        }
+        else if (choice[0] == '7')
+        {
+            (void)send_lcd_write(1U, 0U, "HELLO L2", seq++);
         }
         else if ((choice[0] == 'q') || (choice[0] == 'Q'))
         {
