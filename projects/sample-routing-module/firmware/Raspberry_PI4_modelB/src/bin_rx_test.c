@@ -24,8 +24,8 @@ int main(void)
     uint8_t byte;
     uint8_t frame[SRM_MAX_FRAME_SIZE];
     ssize_t rc;
-    int count = 0;
-    int total_len;
+    size_t count = 0U;
+    size_t total_len;
     uint8_t payload_len;
     uint16_t crc_rx;
     uint16_t crc_calc;
@@ -74,14 +74,14 @@ int main(void)
         rc = serial_port_read_byte_timeout(fd, &byte, 3000);
         if (rc < 0)
         {
-            printf("ERROR: serial read failed at header byte %d\n", count);
+            printf("ERROR: serial read failed at header byte %zu\n", count);
             serial_port_close(fd);
             return -1;
         }
 
         if (rc == 0)
         {
-            printf("ERROR: timeout waiting for header byte %d\n", count);
+            printf("ERROR: timeout waiting for header byte %zu\n", count);
             serial_port_close(fd);
             return -1;
         }
@@ -101,21 +101,21 @@ int main(void)
     total_len = SRM_HEADER_SIZE + payload_len + SRM_CRC_SIZE;
 
     printf("SOF found. Header received.\n");
-    printf("LEN = %u, total frame size = %d bytes\n", payload_len, total_len);
+    printf("LEN = %u, total frame size = %zu bytes\n", payload_len, total_len);
 
     while (count < total_len)
     {
         rc = serial_port_read_byte_timeout(fd, &byte, 3000);
         if (rc < 0)
         {
-            printf("ERROR: serial read failed at byte %d\n", count);
+            printf("ERROR: serial read failed at byte %zu\n", count);
             serial_port_close(fd);
             return -1;
         }
 
         if (rc == 0)
         {
-            printf("ERROR: timeout waiting for byte %d\n", count);
+            printf("ERROR: timeout waiting for byte %zu\n", count);
             serial_port_close(fd);
             return -1;
         }

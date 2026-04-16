@@ -3,6 +3,7 @@
 #include <string.h>
 #include <sys/types.h>
 
+#include "menu_test.h"
 #include "config.h"
 #include "serial_port.h"
 #include "srm_defs.h"
@@ -40,8 +41,8 @@ static int send_and_receive_payload(uint8_t cmd_req,
     size_t tx_len = 0U;
     ssize_t rc;
     uint8_t byte;
-    int count = 0;
-    int total_len;
+    size_t count = 0U;
+    size_t total_len;
     uint8_t rx_payload_len;
     uint16_t crc_rx;
     uint16_t crc_calc;
@@ -225,7 +226,7 @@ static int send_lcd_write(uint8_t row, uint8_t col, const char *text, uint8_t se
                                     (uint8_t)(3U + text_len));
 }
 
-int main(void)
+int menu_test_run(void)
 {
     char choice[16];
     uint8_t seq = 1U;

@@ -1,8 +1,9 @@
+#define _DEFAULT_SOURCE
+
 #include <stdio.h>
 #include <stdint.h>
 #include <unistd.h>
 #include <sys/types.h>
-#include <unistd.h>
 
 #include "config.h"
 #include "serial_port.h"
@@ -34,27 +35,27 @@ int main(void)
         return -1;
     }
 
-  while (1)
-{
-    size_t i;
-
-    printf("Sending: ");
-    print_bytes(test_data, sizeof(test_data));
-
-    for (i = 0; i < sizeof(test_data); i++)
+    while (1)
     {
-        if (serial_port_write_all(fd, &test_data[i], 1) != 1)
+        size_t i;
+
+        printf("Sending: ");
+        print_bytes(test_data, sizeof(test_data));
+
+        for (i = 0; i < sizeof(test_data); i++)
         {
-            printf("ERROR: serial write failed\n");
-            serial_port_close(fd);
-            return -1;
+            if (serial_port_write_all(fd, &test_data[i], 1) != 1)
+            {
+                printf("ERROR: serial write failed\n");
+                serial_port_close(fd);
+                return -1;
+            }
+
+            usleep(10000); /* 10 ms between bytes */
         }
 
-        usleep(10000); /* 10 ms between bytes */
+        sleep(1);
     }
-
-    sleep(1);
-}
 
     serial_port_close(fd);
     return 0;
