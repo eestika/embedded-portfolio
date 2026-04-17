@@ -6,6 +6,7 @@
 #include "srm_crc.h"
 #include "srm_defs.h"
 #include "lcd.h"
+#include "lcd_ui.h"
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -90,12 +91,9 @@ void srm_dispatcher_handle_frame(const uint8_t *frame, uint16_t len)
     uint8_t cmd;
     uint8_t seq;
     uint8_t payload_len;
+    const uint8_t *payload;
     uint8_t status_payload[5];
     uint8_t status_len = 0U;
-    char text_buf[SRM_LCD_MAX_TEXT_LEN + 1U];
-    uint8_t row;
-    uint8_t col;
-    uint8_t text_len;
 
     (void)len;
 
@@ -109,6 +107,7 @@ void srm_dispatcher_handle_frame(const uint8_t *frame, uint16_t len)
     cmd = frame[5];
     seq = frame[6];
     payload_len = frame[7];
+    payload = &frame[8];
 
     if (dst != SRM_NODE_ID_SLAVE1)
     {
@@ -120,6 +119,8 @@ void srm_dispatcher_handle_frame(const uint8_t *frame, uint16_t len)
     {
         case SRM_CMD_PING_REQ:
             debug_console_write_line("SRM DISPATCH: PING_REQ");
+
+            (void)lcd_ui_show_temporary_message("PONG", 1200U);
 
             if (srm_dispatcher_send_frame(0U,
                                           SRM_NODE_ID_SLAVE1,
@@ -141,6 +142,8 @@ void srm_dispatcher_handle_frame(const uint8_t *frame, uint16_t len)
             debug_console_write_line("SRM DISPATCH: LED_ON_REQ");
             HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, GPIO_PIN_SET);
 
+            (void)lcd_ui_show_temporary_message("LED ON", 1200U);
+
             if (srm_dispatcher_send_frame(0U,
                                           SRM_NODE_ID_SLAVE1,
                                           src,
@@ -160,6 +163,8 @@ void srm_dispatcher_handle_frame(const uint8_t *frame, uint16_t len)
         case SRM_CMD_LED_OFF_REQ:
             debug_console_write_line("SRM DISPATCH: LED_OFF_REQ");
             HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, GPIO_PIN_RESET);
+
+            (void)lcd_ui_show_temporary_message("LED OFF", 1200U);
 
             if (srm_dispatcher_send_frame(0U,
                                           SRM_NODE_ID_SLAVE1,
@@ -200,83 +205,90 @@ void srm_dispatcher_handle_frame(const uint8_t *frame, uint16_t len)
         case SRM_CMD_LCD_CLEAR_REQ:
             debug_console_write_line("SRM DISPATCH: LCD_CLEAR_REQ");
 
-            if (lcd_clear_display())
+            (void)lcd_ui_show_ready();
+
+            if (srm_dispatcher_send_frame(0U,
+                                          SRM_NODE_ID_SLAVE1,
+                                          src,
+                                          SRM_CMD_LCD_CLEAR_RSP,
+                                          seq,
+                                          NULL,
+                                          0U))
             {
-                if (srm_dispatcher_send_frame(0U,
-                                              SRM_NODE_ID_SLAVE1,
-                                              src,
-                                              SRM_CMD_LCD_CLEAR_RSP,
-                                              seq,
-                                              NULL,
-                                              0U))
-                {
-                    debug_console_write_line("SRM TX: LCD_CLEAR_RSP sent");
-                }
-                else
-                {
-                    debug_console_write_line("SRM TX ERROR: LCD_CLEAR_RSP failed");
-                }
+                debug_console_write_line("SRM TX: LCD_CLEAR_RSP sent");
             }
             else
             {
-                debug_console_write_line("SRM LCD ERROR: clear failed");
+                debug_console_write_line("SRM TX ERROR: LCD_CLEAR_RSP failed");
             }
             break;
 
         case SRM_CMD_LCD_WRITE_REQ:
+        {
+            uint8_t line_index;
+            uint8_t text_len;
+            char text_buf[17];
+            bool write_ok;
+
             debug_console_write_line("SRM DISPATCH: LCD_WRITE_REQ");
 
-            if (payload_len < 3U)
+            if ((payload == NULL) || (payload_len < 1U))
             {
-                debug_console_write_line("SRM LCD ERROR: payload too short");
+                debug_console_write_line("SRM ERROR: LCD_WRITE_REQ invalid payload");
                 break;
             }
 
-            row = frame[8];
-            col = frame[9];
-            text_len = frame[10];
+            line_index = payload[0];
+            text_len = (uint8_t)(payload_len - 1U);
 
-            if (text_len > SRM_LCD_MAX_TEXT_LEN)
+            if (line_index > 1U)
             {
-                debug_console_write_line("SRM LCD ERROR: text too long");
+                debug_console_write_line("SRM ERROR: LCD_WRITE_REQ invalid line index");
                 break;
             }
 
-            if (payload_len != (uint8_t)(3U + text_len))
+            if (text_len > 16U)
             {
-                debug_console_write_line("SRM LCD ERROR: invalid payload length");
-                break;
+                text_len = 16U;
             }
 
             memset(text_buf, 0, sizeof(text_buf));
-            memcpy(text_buf, &frame[11], text_len);
+
+            if (text_len > 0U)
+            {
+                memcpy(text_buf, &payload[1], text_len);
+            }
+
             text_buf[text_len] = '\0';
 
-            if (lcd_write_text(row, col, text_buf))
+            lcd_ui_enter_manual_mode();
+            write_ok = lcd_write_line(line_index, text_buf);
+
+            if (!write_ok)
             {
-                if (srm_dispatcher_send_frame(0U,
-                                              SRM_NODE_ID_SLAVE1,
-                                              src,
-                                              SRM_CMD_LCD_WRITE_RSP,
-                                              seq,
-                                              NULL,
-                                              0U))
-                {
-                    debug_console_write_line("SRM TX: LCD_WRITE_RSP sent");
-                }
-                else
-                {
-                    debug_console_write_line("SRM TX ERROR: LCD_WRITE_RSP failed");
-                }
+                debug_console_write_line("SRM ERROR: lcd_write_line failed");
+            }
+
+            if (srm_dispatcher_send_frame(0U,
+                                          SRM_NODE_ID_SLAVE1,
+                                          src,
+                                          SRM_CMD_LCD_WRITE_RSP,
+                                          seq,
+                                          NULL,
+                                          0U))
+            {
+                debug_console_write_line("SRM TX: LCD_WRITE_RSP sent");
             }
             else
             {
-                debug_console_write_line("SRM LCD ERROR: write failed");
+                debug_console_write_line("SRM TX ERROR: LCD_WRITE_RSP failed");
             }
             break;
+        }
 
         default:
-            debug_console_write_line("SRM DISPATCH: unsupported CMD");
+            debug_console_write_line("SRM DISPATCH: unsupported command");
             break;
     }
 }
+

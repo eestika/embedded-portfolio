@@ -2,6 +2,7 @@
 #include "main.h"
 #include "debug_console.h"
 #include "lcd.h"
+#include "lcd_ui.h"
 #include "eeprom.h"
 #include "rs485_if.h"
 
@@ -9,6 +10,7 @@ void app_main_init(void)
 {
     debug_console_init();
     lcd_init();
+    lcd_ui_init();
     eeprom_init();
     rs485_if_init();
 
@@ -25,6 +27,7 @@ void app_main_init(void)
     debug_console_write_line("SRM binary pipeline ACTIVE");
     debug_console_write_line("Heartbeat task DISABLED");
     debug_console_write_line("LD3 is controlled only by SRM commands");
+    debug_console_write_line("LCD UI READY state ACTIVE");
     debug_console_write_line("");
 }
 
@@ -35,4 +38,5 @@ void app_main_run(void)
 
     /* Periodic peripheral tasks */
     lcd_task();
+    lcd_ui_task();
 }
