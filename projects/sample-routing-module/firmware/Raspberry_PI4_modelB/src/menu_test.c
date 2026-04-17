@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <sys/types.h>
+#include <stdbool.h>
 
 #include "menu_test.h"
 #include "config.h"
@@ -27,6 +28,44 @@ static uint32_t decode_u32_be(const uint8_t *data)
            ((uint32_t)data[1] << 16) |
            ((uint32_t)data[2] << 8)  |
            ((uint32_t)data[3]);
+}
+
+static void trim_newline(char *str)
+{
+    size_t len;
+
+    if (str == NULL)
+    {
+        return;
+    }
+
+    len = strlen(str);
+
+    while ((len > 0U) && ((str[len - 1U] == '\n') || (str[len - 1U] == '\r')))
+    {
+        str[len - 1U] = '\0';
+        len--;
+    }
+}
+
+static bool prompt_lcd_text(char *buffer, size_t buffer_size, const char *prompt)
+{
+    if ((buffer == NULL) || (buffer_size == 0U) || (prompt == NULL))
+    {
+        return false;
+    }
+
+    printf("%s", prompt);
+    fflush(stdout);
+
+    if (fgets(buffer, (int)buffer_size, stdin) == NULL)
+    {
+        return false;
+    }
+
+    trim_newline(buffer);
+
+    return true;
 }
 
 static int send_and_receive_payload(uint8_t cmd_req,
@@ -102,7 +141,7 @@ static int send_and_receive_payload(uint8_t cmd_req,
         if (byte == SRM_SOF)
         {
             rx_frame[0] = byte;
-            count = 1;
+            count = 1U;
             break;
         }
     }
@@ -144,10 +183,10 @@ static int send_and_receive_payload(uint8_t cmd_req,
     }
 
     printf("RX frame:\n");
-    print_frame_hex(rx_frame, (size_t)total_len);
+    print_frame_hex(rx_frame, total_len);
 
-    crc_rx = (uint16_t)(((uint16_t)rx_frame[total_len - 2] << 8) |
-                        (uint16_t)rx_frame[total_len - 1]);
+    crc_rx = (uint16_t)(((uint16_t)rx_frame[total_len - 2U] << 8) |
+                        (uint16_t)rx_frame[total_len - 1U]);
     crc_calc = srm_crc16_ccitt_false(&rx_frame[1], (size_t)(7U + rx_payload_len));
 
     printf("Decoded RX:\n");
@@ -198,9 +237,9 @@ static int send_and_receive(uint8_t cmd_req, uint8_t cmd_rsp_expected, uint8_t s
     return send_and_receive_payload(cmd_req, cmd_rsp_expected, seq, NULL, 0U);
 }
 
-static int send_lcd_write(uint8_t row, uint8_t col, const char *text, uint8_t seq)
+static int send_lcd_write(uint8_t line_index, const char *text, uint8_t seq)
 {
-    uint8_t payload[3U + SRM_LCD_MAX_TEXT_LEN];
+    uint8_t payload[1U + SRM_LCD_MAX_TEXT_LEN];
     uint8_t text_len;
 
     if (text == NULL)
@@ -214,21 +253,24 @@ static int send_lcd_write(uint8_t row, uint8_t col, const char *text, uint8_t se
         text_len = SRM_LCD_MAX_TEXT_LEN;
     }
 
-    payload[0] = row;
-    payload[1] = col;
-    payload[2] = text_len;
-    memcpy(&payload[3], text, text_len);
+    payload[0] = line_index;
+
+    if (text_len > 0U)
+    {
+        memcpy(&payload[1], text, text_len);
+    }
 
     return send_and_receive_payload(SRM_CMD_LCD_WRITE_REQ,
                                     SRM_CMD_LCD_WRITE_RSP,
                                     seq,
                                     payload,
-                                    (uint8_t)(3U + text_len));
+                                    (uint8_t)(1U + text_len));
 }
 
 int menu_test_run(void)
 {
     char choice[16];
+    char lcd_text[128];
     uint8_t seq = 1U;
 
     printf("=== SRM Raspberry Menu Test ===\n");
@@ -275,11 +317,29 @@ int menu_test_run(void)
         }
         else if (choice[0] == '6')
         {
-            (void)send_lcd_write(0U, 0U, "HELLO L1", seq++);
+            if (prompt_lcd_text(lcd_text,
+                                sizeof(lcd_text),
+                                "Enter text for LCD line 1 (max 16 chars): "))
+            {
+                (void)send_lcd_write(0U, lcd_text, seq++);
+            }
+            else
+            {
+                printf("Input error.\n");
+            }
         }
         else if (choice[0] == '7')
         {
-            (void)send_lcd_write(1U, 0U, "HELLO L2", seq++);
+            if (prompt_lcd_text(lcd_text,
+                                sizeof(lcd_text),
+                                "Enter text for LCD line 2 (max 16 chars): "))
+            {
+                (void)send_lcd_write(1U, lcd_text, seq++);
+            }
+            else
+            {
+                printf("Input error.\n");
+            }
         }
         else if ((choice[0] == 'q') || (choice[0] == 'Q'))
         {
