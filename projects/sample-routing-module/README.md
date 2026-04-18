@@ -116,22 +116,43 @@ Text protocols are simple to debug but become inefficient when many commands, se
 SOF | VER | FLAGS | SRC | DST | CMD | SEQ | LEN | PAYLOAD | CRC16
 ```
 
-## Frame Field Description
+### Frame Field Description
+
+| Field | Size | Meaning | Purpose |
+|-------|------|----------|----------|
+| SOF | 8 bit | Start of Frame | Identifies the beginning of a valid SRM frame. The current value is `0xAA`. |
+| VER | 8 bit | Protocol Version | Allows future protocol evolution while maintaining backward compatibility. The current version is `0x01`. |
+| FLAGS | 8 bit | Frame Flags | Reserved for future use such as ACK, NACK, broadcast, priority, or error flags. Currently set to `0x00`. |
+| SRC | 8 bit | Source Address | Identifies the sender of the frame. Example: Raspberry Pi master address. |
+| DST | 8 bit | Destination Address | Identifies the intended receiver of the frame. Example: STM32 slave address. |
+| CMD | 8 bit | Command Identifier | Specifies which operation must be executed, such as PING, LED ON, STATUS, or LCD WRITE. |
+| SEQ | 8 bit | Sequence Number | Used to match requests and responses and to detect duplicate or missing frames. |
+| LEN | 8 bit | Payload Length | Indicates the number of bytes contained in the payload field. |
+| PAYLOAD | Variable | Command Data | Contains the actual data associated with the command. Its size depends on the command type. |
+| CRC16 | 16 bit | Frame Validation | Used to detect transmission errors and validate the integrity of the complete frame. |
 
 
-| Field   | Meaning             |
-| ------- | ------------------- |
-| SOF     | Start of Frame      |
-| VER     | Protocol Version    |
-| FLAGS   | Frame Flags         |
-| SRC     | Source Address      |
-| DST     | Destination Address |
-| CMD     | Command Identifier  |
-| SEQ     | Sequence Number     |
-| LEN     | Payload Length      |
-| PAYLOAD | Command Data        |
-| CRC16   | Frame Validation    |
+### Example Frame Breakdown
+| Byte(s)     | Meaning          |
+| ----------- | ---------------- |
+| AA          | SOF              |
+| 01          | VER              |
+| 00          | FLAGS            |
+| 01          | SRC              |
+| 10          | DST              |
+| 20          | CMD              |
+| 05          | SEQ              |
+| 04          | LEN              |
+| 54 45 53 54 | PAYLOAD = "TEST" |
+| 3F 92       | CRC16            |
 
+
+
+## Example Frame
+
+```text
+AA 01 00 01 10 20 05 04 54 45 53 54 3F 92
+```
 
 This structure allows:
 
@@ -150,6 +171,41 @@ Reliable request / response behavior
 5. STM32 sends `LCD_WRITE_LINE1_RSP`
 6. Raspberry validates response and CRC
 
+## LCD Write Command Flow
+
+The following diagram shows how an LCD line update command is processed between the Raspberry Pi master, the STM32 slave and the LCD1602 display.
+
+
+```mermaid
+flowchart LR
+
+    A[Raspberry Pi 4<br>Master]
+    B[STM32 F207ZG<br>Slave]
+    C[Validate<br>Frame]
+    D[Check<br>CRC16]
+    E[Decode<br>Command]
+    F[LCD1602<br>Update Display]
+    G[Send LCD_WRITE_LINE1_RSP]
+    H[Master Validates<br>Response + CRC16]
+
+    A -->|LCD_WRITE_LINE1_REQ via RS485| B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    F --> G
+    G --> H
+
+
+    style A fill:#DCE6F2,stroke:#4A6FA5,stroke-width:2px,color:#000
+    style B fill:#E2F0D9,stroke:#70AD47,stroke-width:2px,color:#000
+    style C fill:#FFF2CC,stroke:#D6B656,stroke-width:2px,color:#000
+    style D fill:#FFF2CC,stroke:#D6B656,stroke-width:2px,color:#000
+    style E fill:#FFF2CC,stroke:#D6B656,stroke-width:2px,color:#000
+    style F fill:#FCE4D6,stroke:#C55A11,stroke-width:2px,color:#000
+    style G fill:#D9EAD3,stroke:#6AA84F,stroke-width:2px,color:#000
+    style H fill:#DCE6F2,stroke:#4A6FA5,stroke-width:2px,color:#000
+```
 
 The same mechanism is also used for:
 
