@@ -7,10 +7,10 @@
 #include "srm_defs.h"
 #include "lcd.h"
 #include "lcd_ui.h"
+#include "stepper.h"
 
 #include <stdbool.h>
 #include <stddef.h>
-#include <stdio.h>
 #include <string.h>
 
 static bool srm_dispatcher_send_frame(uint8_t flags,
@@ -286,9 +286,77 @@ void srm_dispatcher_handle_frame(const uint8_t *frame, uint16_t len)
             break;
         }
 
+        case SRM_CMD_STEPPER_CW_REQ:
+            debug_console_write_line("SRM DISPATCH: STEPPER_CW_REQ");
+
+            (void)lcd_ui_show_temporary_message("STEP CW", 1200U);
+            (void)stepper_rotate_cw(256U, 10U);
+            stepper_release();
+
+            if (srm_dispatcher_send_frame(0U,
+                                          SRM_NODE_ID_SLAVE1,
+                                          src,
+                                          SRM_CMD_STEPPER_CW_RSP,
+                                          seq,
+                                          NULL,
+                                          0U))
+            {
+                debug_console_write_line("SRM TX: STEPPER_CW_RSP sent");
+            }
+            else
+            {
+                debug_console_write_line("SRM TX ERROR: STEPPER_CW_RSP failed");
+            }
+            break;
+
+        case SRM_CMD_STEPPER_CCW_REQ:
+            debug_console_write_line("SRM DISPATCH: STEPPER_CCW_REQ");
+
+            (void)lcd_ui_show_temporary_message("STEP CCW", 1200U);
+            (void)stepper_rotate_ccw(256U, 10U);
+            stepper_release();
+
+            if (srm_dispatcher_send_frame(0U,
+                                          SRM_NODE_ID_SLAVE1,
+                                          src,
+                                          SRM_CMD_STEPPER_CCW_RSP,
+                                          seq,
+                                          NULL,
+                                          0U))
+            {
+                debug_console_write_line("SRM TX: STEPPER_CCW_RSP sent");
+            }
+            else
+            {
+                debug_console_write_line("SRM TX ERROR: STEPPER_CCW_RSP failed");
+            }
+            break;
+
+        case SRM_CMD_STEPPER_HOME_REQ:
+            debug_console_write_line("SRM DISPATCH: STEPPER_HOME_REQ");
+
+            (void)lcd_ui_show_temporary_message("STEP HOME", 1200U);
+            (void)stepper_go_home(10U);
+            stepper_release();
+
+            if (srm_dispatcher_send_frame(0U,
+                                          SRM_NODE_ID_SLAVE1,
+                                          src,
+                                          SRM_CMD_STEPPER_HOME_RSP,
+                                          seq,
+                                          NULL,
+                                          0U))
+            {
+                debug_console_write_line("SRM TX: STEPPER_HOME_RSP sent");
+            }
+            else
+            {
+                debug_console_write_line("SRM TX ERROR: STEPPER_HOME_RSP failed");
+            }
+            break;
+
         default:
             debug_console_write_line("SRM DISPATCH: unsupported command");
             break;
     }
 }
-

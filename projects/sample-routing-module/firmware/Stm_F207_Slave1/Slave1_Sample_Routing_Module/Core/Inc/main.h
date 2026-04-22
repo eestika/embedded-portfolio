@@ -73,6 +73,14 @@ void Error_Handler(void);
 #define TMS_GPIO_Port GPIOA
 #define TCK_Pin GPIO_PIN_14
 #define TCK_GPIO_Port GPIOA
+#define STEP_IN1_Pin GPIO_PIN_4
+#define STEP_IN1_GPIO_Port GPIOD
+#define STEP_IN2_Pin GPIO_PIN_5
+#define STEP_IN2_GPIO_Port GPIOD
+#define STEP_IN3_Pin GPIO_PIN_6
+#define STEP_IN3_GPIO_Port GPIOD
+#define STEP_IN4_Pin GPIO_PIN_7
+#define STEP_IN4_GPIO_Port GPIOD
 #define SWO_Pin GPIO_PIN_3
 #define SWO_GPIO_Port GPIOB
 #define RS485_TX_Pin GPIO_PIN_6

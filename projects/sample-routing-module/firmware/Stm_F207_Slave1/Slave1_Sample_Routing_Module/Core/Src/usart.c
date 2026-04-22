@@ -17,7 +17,6 @@
   ******************************************************************************
   */
 /* USER CODE END Header */
-
 /* Includes ------------------------------------------------------------------*/
 #include "usart.h"
 
@@ -29,8 +28,10 @@ UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart3;
 
 /* USART1 init function */
+
 void MX_USART1_UART_Init(void)
 {
+
   /* USER CODE BEGIN USART1_Init 0 */
 
   /* USER CODE END USART1_Init 0 */
@@ -53,11 +54,13 @@ void MX_USART1_UART_Init(void)
   /* USER CODE BEGIN USART1_Init 2 */
 
   /* USER CODE END USART1_Init 2 */
-}
 
+}
 /* USART3 init function */
+
 void MX_USART3_UART_Init(void)
 {
+
   /* USER CODE BEGIN USART3_Init 0 */
 
   /* USER CODE END USART3_Init 0 */
@@ -80,18 +83,18 @@ void MX_USART3_UART_Init(void)
   /* USER CODE BEGIN USART3_Init 2 */
 
   /* USER CODE END USART3_Init 2 */
+
 }
 
 void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
 {
-  GPIO_InitTypeDef GPIO_InitStruct = {0};
 
-  if (uartHandle->Instance == USART1)
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+  if(uartHandle->Instance==USART1)
   {
   /* USER CODE BEGIN USART1_MspInit 0 */
 
   /* USER CODE END USART1_MspInit 0 */
-
     /* USART1 clock enable */
     __HAL_RCC_USART1_CLK_ENABLE();
 
@@ -100,7 +103,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
     PB6     ------> USART1_TX
     PB7     ------> USART1_RX
     */
-    GPIO_InitStruct.Pin = RS485_TX_Pin | RS485_RX_Pin;
+    GPIO_InitStruct.Pin = RS485_TX_Pin|RS485_RX_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
@@ -112,12 +115,11 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
     HAL_NVIC_EnableIRQ(USART1_IRQn);
   /* USER CODE END USART1_MspInit 1 */
   }
-  else if (uartHandle->Instance == USART3)
+  else if(uartHandle->Instance==USART3)
   {
   /* USER CODE BEGIN USART3_MspInit 0 */
 
   /* USER CODE END USART3_MspInit 0 */
-
     /* USART3 clock enable */
     __HAL_RCC_USART3_CLK_ENABLE();
 
@@ -126,7 +128,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
     PD8     ------> USART3_TX
     PD9     ------> USART3_RX
     */
-    GPIO_InitStruct.Pin = DEBUG_TX_Pin | DEBUG_RX_Pin;
+    GPIO_InitStruct.Pin = DEBUG_TX_Pin|DEBUG_RX_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
@@ -141,12 +143,12 @@ void HAL_UART_MspInit(UART_HandleTypeDef* uartHandle)
 
 void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 {
-  if (uartHandle->Instance == USART1)
+
+  if(uartHandle->Instance==USART1)
   {
   /* USER CODE BEGIN USART1_MspDeInit 0 */
 
   /* USER CODE END USART1_MspDeInit 0 */
-
     /* Peripheral clock disable */
     __HAL_RCC_USART1_CLK_DISABLE();
 
@@ -154,18 +156,17 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
     PB6     ------> USART1_TX
     PB7     ------> USART1_RX
     */
-    HAL_GPIO_DeInit(GPIOB, RS485_TX_Pin | RS485_RX_Pin);
+    HAL_GPIO_DeInit(GPIOB, RS485_TX_Pin|RS485_RX_Pin);
 
   /* USER CODE BEGIN USART1_MspDeInit 1 */
     HAL_NVIC_DisableIRQ(USART1_IRQn);
   /* USER CODE END USART1_MspDeInit 1 */
   }
-  else if (uartHandle->Instance == USART3)
+  else if(uartHandle->Instance==USART3)
   {
   /* USER CODE BEGIN USART3_MspDeInit 0 */
 
   /* USER CODE END USART3_MspDeInit 0 */
-
     /* Peripheral clock disable */
     __HAL_RCC_USART3_CLK_DISABLE();
 
@@ -173,7 +174,7 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
     PD8     ------> USART3_TX
     PD9     ------> USART3_RX
     */
-    HAL_GPIO_DeInit(GPIOD, DEBUG_TX_Pin | DEBUG_RX_Pin);
+    HAL_GPIO_DeInit(GPIOD, DEBUG_TX_Pin|DEBUG_RX_Pin);
 
   /* USER CODE BEGIN USART3_MspDeInit 1 */
 

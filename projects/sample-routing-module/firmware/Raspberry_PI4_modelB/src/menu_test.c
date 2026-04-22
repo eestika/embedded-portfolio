@@ -1,8 +1,11 @@
+#define _POSIX_C_SOURCE 200809L
+
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
 #include <sys/types.h>
 #include <stdbool.h>
+#include <time.h>
 
 #include "menu_test.h"
 #include "config.h"
@@ -10,6 +13,23 @@
 #include "srm_defs.h"
 #include "srm_crc.h"
 #include "srm_frame_builder.h"
+
+#define SOF_SYNC_TIMEOUT_MS 3000L
+#define SOF_POLL_TIMEOUT_MS 100
+
+static long elapsed_ms_since(const struct timespec *start)
+{
+    struct timespec now;
+    long sec_diff;
+    long nsec_diff;
+
+    clock_gettime(CLOCK_MONOTONIC, &now);
+
+    sec_diff = (long)(now.tv_sec - start->tv_sec);
+    nsec_diff = (long)(now.tv_nsec - start->tv_nsec);
+
+    return (sec_diff * 1000L) + (nsec_diff / 1000000L);
+}
 
 static void print_frame_hex(const uint8_t *buf, size_t len)
 {
@@ -85,6 +105,7 @@ static int send_and_receive_payload(uint8_t cmd_req,
     uint8_t rx_payload_len;
     uint16_t crc_rx;
     uint16_t crc_calc;
+    struct timespec sof_wait_start;
 
     if (srm_build_frame(tx_frame,
                         sizeof(tx_frame),
@@ -121,9 +142,18 @@ static int send_and_receive_payload(uint8_t cmd_req,
 
     printf("Request sent. Waiting for response...\n");
 
+    clock_gettime(CLOCK_MONOTONIC, &sof_wait_start);
+
     while (1)
     {
-        rc = serial_port_read_byte_timeout(fd, &byte, 3000);
+        if (elapsed_ms_since(&sof_wait_start) >= SOF_SYNC_TIMEOUT_MS)
+        {
+            printf("ERROR: timeout waiting for SOF\n");
+            serial_port_close(fd);
+            return -1;
+        }
+
+        rc = serial_port_read_byte_timeout(fd, &byte, SOF_POLL_TIMEOUT_MS);
         if (rc < 0)
         {
             printf("ERROR: serial read failed while waiting for SOF\n");
@@ -133,9 +163,7 @@ static int send_and_receive_payload(uint8_t cmd_req,
 
         if (rc == 0)
         {
-            printf("ERROR: timeout waiting for SOF\n");
-            serial_port_close(fd);
-            return -1;
+            continue;
         }
 
         if (byte == SRM_SOF)
@@ -287,6 +315,9 @@ int menu_test_run(void)
         printf("5) LCD CLEAR\n");
         printf("6) LCD WRITE LINE 1\n");
         printf("7) LCD WRITE LINE 2\n");
+        printf("8) STEPPER CW\n");
+        printf("9) STEPPER CCW\n");
+        printf("10) STEPPER HOME\n");
         printf("q) QUIT\n");
         printf("Select: ");
 
@@ -295,27 +326,29 @@ int menu_test_run(void)
             continue;
         }
 
-        if (choice[0] == '1')
+        trim_newline(choice);
+
+        if (strcmp(choice, "1") == 0)
         {
             (void)send_and_receive(SRM_CMD_PING_REQ, SRM_CMD_PING_RSP, seq++);
         }
-        else if (choice[0] == '2')
+        else if (strcmp(choice, "2") == 0)
         {
             (void)send_and_receive(SRM_CMD_LED_ON_REQ, SRM_CMD_LED_ON_RSP, seq++);
         }
-        else if (choice[0] == '3')
+        else if (strcmp(choice, "3") == 0)
         {
             (void)send_and_receive(SRM_CMD_LED_OFF_REQ, SRM_CMD_LED_OFF_RSP, seq++);
         }
-        else if (choice[0] == '4')
+        else if (strcmp(choice, "4") == 0)
         {
             (void)send_and_receive(SRM_CMD_STATUS_REQ, SRM_CMD_STATUS_RSP, seq++);
         }
-        else if (choice[0] == '5')
+        else if (strcmp(choice, "5") == 0)
         {
             (void)send_and_receive(SRM_CMD_LCD_CLEAR_REQ, SRM_CMD_LCD_CLEAR_RSP, seq++);
         }
-        else if (choice[0] == '6')
+        else if (strcmp(choice, "6") == 0)
         {
             if (prompt_lcd_text(lcd_text,
                                 sizeof(lcd_text),
@@ -328,7 +361,7 @@ int menu_test_run(void)
                 printf("Input error.\n");
             }
         }
-        else if (choice[0] == '7')
+        else if (strcmp(choice, "7") == 0)
         {
             if (prompt_lcd_text(lcd_text,
                                 sizeof(lcd_text),
@@ -340,6 +373,18 @@ int menu_test_run(void)
             {
                 printf("Input error.\n");
             }
+        }
+        else if (strcmp(choice, "8") == 0)
+        {
+            (void)send_and_receive(SRM_CMD_STEPPER_CW_REQ, SRM_CMD_STEPPER_CW_RSP, seq++);
+        }
+        else if (strcmp(choice, "9") == 0)
+        {
+            (void)send_and_receive(SRM_CMD_STEPPER_CCW_REQ, SRM_CMD_STEPPER_CCW_RSP, seq++);
+        }
+        else if (strcmp(choice, "10") == 0)
+        {
+            (void)send_and_receive(SRM_CMD_STEPPER_HOME_REQ, SRM_CMD_STEPPER_HOME_RSP, seq++);
         }
         else if ((choice[0] == 'q') || (choice[0] == 'Q'))
         {
