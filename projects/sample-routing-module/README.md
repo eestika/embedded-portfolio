@@ -257,3 +257,163 @@ On-board STM32 user LED
 
 ---
 
+
+## Wiring
+
+### STM32 NUCLEO-F207ZG Pin Mapping
+
+| Function    | STM32 Pin | External Device    |
+| ----------- | --------- | ------------------ |
+| RS485 TX    | PB6       | RS485 module RX    |
+| RS485 RX    | PB7       | RS485 module TX    |
+| LCD I2C SCL | PB8       | LCD1602 I2C SCL    |
+| LCD I2C SDA | PB9       | LCD1602 I2C SDA    |
+| Stepper IN1 | PD4       | ULN2003 IN1        |
+| Stepper IN2 | PD5       | ULN2003 IN2        |
+| Stepper IN3 | PD6       | ULN2003 IN3        |
+| Stepper IN4 | PD7       | ULN2003 IN4        |
+| User LED    | PA5       | On-board STM32 LED |
+
+### LCD1602 I2C Wiring
+
+| LCD Pin | STM32 Pin |
+| ------- | --------- |
+| VCC     | 5V        |
+| GND     | GND       |
+| SDA     | PB9       |
+| SCL     | PB8       |
+
+### ULN2003 Stepper Driver Wiring
+
+| ULN2003 Pin | STM32 Pin   |
+| ----------- | ----------- |
+| IN1         | PD4         |
+| IN2         | PD5         |
+| IN3         | PD6         |
+| IN4         | PD7         |
+| VCC         | External 5V |
+| GND         | GND         |
+
+---
+
+## Stepper Motor Features
+
+The final version of the project supports:
+
+* Clockwise stepper rotation
+* Counter-clockwise stepper rotation
+* Software HOME return movement
+* LCD feedback during movement
+* Raspberry Pi menu integration
+
+### Stepper Commands
+
+* `STEPPER_CW_REQ / STEPPER_CW_RSP`
+* `STEPPER_CCW_REQ / STEPPER_CCW_RSP`
+* `STEPPER_HOME_REQ / STEPPER_HOME_RSP`
+
+### HOME Function
+
+The HOME command is currently implemented in software.
+
+The stepper motor rotates in the reverse direction for a predefined number of steps in order to approximately return to its initial position.
+
+A future improvement would be adding:
+
+* Mechanical limit switch
+* Optical sensor
+* Hall sensor
+* Real hardware homing reference
+
+This would make the HOME function more accurate and closer to a real industrial machine.
+
+---
+
+# Italiano
+
+## Descrizione del progetto
+
+Il progetto SRM (Sample Routing Module) simula una piccola architettura embedded industriale o medicale.
+
+Il sistema utilizza:
+
+* Raspberry Pi 4 come master
+* STM32 NUCLEO-F207ZG come slave
+* Comunicazione RS485
+* Protocollo binario proprietario
+* Validazione CRC16
+* Display LCD1602 I2C
+* Controllo LED
+* Controllo stepper motor
+
+### Funzioni attualmente supportate
+
+* PING
+* LED ON / OFF
+* STATUS
+* LCD CLEAR
+* LCD WRITE LINE 1
+* LCD WRITE LINE 2
+* STEPPER CW
+* STEPPER CCW
+* STEPPER HOME
+
+---
+
+# Eesti keel
+
+## Projekti kirjeldus
+
+SRM (Sample Routing Module) projekt simuleerib väikest tööstuslikku või meditsiinilist embedded süsteemi.
+
+Süsteem kasutab:
+
+* Raspberry Pi 4 master seadmena
+* STM32 NUCLEO-F207ZG slave seadmena
+* RS485 sidet
+* Kohandatud binaarprotokolli
+* CRC16 kontrolli
+* LCD1602 I2C ekraani
+* LED juhtimist
+* Samm-mootori juhtimist
+
+### Praegused funktsioonid
+
+* PING
+* LED ON / OFF
+* STATUS
+* LCD CLEAR
+* LCD WRITE
+* STEPPER CW
+* STEPPER CCW
+* STEPPER HOME
+
+---
+
+# Русский
+
+## Описание проекта
+
+Проект SRM (Sample Routing Module) моделирует небольшую промышленную или медицинскую embedded-систему.
+
+Система использует:
+
+* Raspberry Pi 4 как master
+* STM32 NUCLEO-F207ZG как slave
+* Связь RS485
+* Пользовательский бинарный протокол
+* Проверку CRC16
+* LCD1602 I2C дисплей
+* Управление LED
+* Управление шаговым двигателем
+
+### Поддерживаемые функции
+
+* PING
+* LED ON / OFF
+* STATUS
+* LCD CLEAR
+* LCD WRITE
+* STEPPER CW
+* STEPPER CCW
+* STEPPER HOME
