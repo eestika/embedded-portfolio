@@ -2,7 +2,7 @@
 
 Portfolio of embedded systems projects by Daniele Perez (Tallinn, Estonia).
 
-Focus areas:
+## Focus Areas
 - Embedded C / C++
 - STM32 and ESP32 firmware
 - Peripheral integration
@@ -14,51 +14,63 @@ Focus areas:
 
 # Main Projects
 
-## Rover (personal robotics project)
+## Sample Routing Module (SRM) — Release 1.0 Completed
 
-A personal robotics and firmware architecture project based on STM32.
+A modular embedded routing and communication platform designed to simulate a **real-world master-slave architecture**, inspired by industrial systems.
 
-Main goals:
+### Architecture
+- Raspberry Pi 4 → Master (Linux-based controller)
+- STM32 NUCLEO-F207 → Slave communication node
+- RS485 communication bus
+- LCD1602 for system feedback
+- EEPROM for data storage
+
+### Implemented Features (v1.0)
+- Custom binary protocol (frame-based communication)
+- Master ↔ Slave communication over RS485
+- Parser + dispatcher architecture
+- CRC validation
+- State-machine driven logic
+- LCD diagnostic output
 - Modular firmware structure
-- Peripheral testing and validation
-- UART communication
-- Motor driver integration
-- RS485 and CAN experiments
-- Future sensor and display integration
-- Incremental hardware bring-up
 
-Project page:
-- `projects/rover_h533/`
+### Purpose
+- Simulate industrial embedded communication systems
+- Practice structured firmware design
+- Develop reusable embedded modules
+- Build a portfolio-ready project aligned with real applications
+
+### Next Steps (v2.0)
+- Multi-slave architecture
+- Additional actuator integration (stepper motors, sensors)
+- Extended command set
+- Improved system scalability
+
+**Project page:**
+
+projects/sample-routing-module/
+
 
 ---
 
-## Sample Routing Module
+## Rover Platform — Currently Suspended (Hardware Lab Project)
 
-A modular embedded routing and communication test platform designed to simulate a master-slave architecture.
+A personal embedded robotics platform used as a **hardware testing and prototyping environment**.
 
-Current hardware:
-- Raspberry Pi 4 as Linux master/controller
-- STM32 NUCLEO-F207 as communication node
-- MikroE UNI-2003 expansion board
-- Waveshare USB to RS485 interface
-- LCD1602 display
-- AT24C128 EEPROM
+### Purpose
+- Low-level hardware validation
+- Peripheral testing (UART, PWM, GPIO)
+- Motor driver experimentation
+- Debugging with Logic Analyzer
+- Rapid prototyping of embedded components
 
-Planned communication buses:
-- UART
-- RS485
-- I2C
-- SPI
+### Status
+⏸ Currently suspended to focus on SRM development
 
-Project goals:
-- Create a realistic embedded communication topology
-- Practice protocol design and packet routing
-- Test EEPROM storage and LCD diagnostics
-- Build reusable firmware modules
-- Develop a portfolio-ready industrial-style demo
+**Project page:**
 
-Project page:
-- `projects/sample-routing-module/`
+projects/rover_h533/
+
 
 ---
 
@@ -114,12 +126,6 @@ Repositories typically include:
 # Notes
 
 Some full or client-related versions remain private.
-
-Private repositories may include:
-- NDA-protected work
-- Client firmware
-- Advanced prototypes
-- Experimental integrations
 
 Public repositories are intended to demonstrate:
 - Firmware structure
