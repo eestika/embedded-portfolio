@@ -75,11 +75,19 @@ This project is intentionally:
 - modular
 - understandable
 - hardware-oriented
-- burnout-safe
+- incremental
 
 The purpose is not to create "magic AI".
 
 The purpose is to deeply understand how intelligent behavior can emerge from simple mathematical structures running on real embedded hardware.
+
+The project follows a step-by-step engineering approach:
+
+- understand the theory
+- validate the mathematics
+- implement inference on MCU
+- connect AI logic to physical hardware
+- progressively evolve toward embedded AI systems
 
 ---
 
@@ -98,12 +106,19 @@ Additional long-term study notes and experimental learning material are maintain
 
 # Current Status
 
-Milestone 1 completed locally:
+Milestone 1 completed:
 
 - PlatformIO ESP32 project created
 - Serial communication verified
 - Fixed-weight AND perceptron implemented
 - Inference validated through Serial Monitor
+
+Milestone 2 completed:
+
+- Perceptron connected to real hardware output
+- Onboard LED controlled by inference result
+- Active LOW hardware abstraction implemented
+- Real-time serial debugging added
 
 Current perceptron configuration:
 
@@ -111,8 +126,14 @@ Current perceptron configuration:
 - w2 = 1.0
 - bias = -1.5
 
+Current result:
+
+The ESP32 is now capable of executing a minimal embedded AI inference pipeline controlling physical hardware.
+
 Next milestone:
-Real hardware output control using LED.
+
+- OR perceptron
+- simple training algorithm
 
 ## Current Firmware Experiments
 

@@ -14,7 +14,7 @@ Portfolio of embedded systems projects by Daniele Perez (Tallinn, Estonia).
 
 # Main Projects
 
-## Sample Routing Module (SRM) — Release 1.0 Completed
+## Sample Routing Module (SRM) — Release 1.0 Completed / Ongoing Development
 
 A modular embedded routing and communication platform designed to simulate a **real-world master-slave architecture**, inspired by industrial systems.
 
@@ -41,6 +41,7 @@ A modular embedded routing and communication platform designed to simulate a **r
 - Build a portfolio-ready project aligned with real applications
 
 ### Next Steps (v2.0)
+The project is currently evolving toward a larger smart embedded automation platform with additional hardware modules, actuator control and future AI-assisted interaction experiments.
 - Multi-slave architecture
 - Additional actuator integration (stepper motors, sensors)
 - Extended command set
@@ -50,12 +51,53 @@ A modular embedded routing and communication platform designed to simulate a **r
 
 projects/sample-routing-module/
 
-
 ---
 
-## Rover Platform — Currently Suspended (Hardware Lab Project)
+## Tiny Perceptron Node — Embedded AI Foundations Project
+
+A minimal embedded AI project focused on understanding the real foundations of neural computation directly on microcontrollers.
+
+The project starts from the simplest possible artificial neuron: the perceptron.
+
+### Current Hardware
+- ESP32 WROVER-E Freenove
+- PlatformIO
+- Serial Monitor
+- onboard LED
+
+### Current Features
+- Embedded inference pipeline
+- Fixed-weight AND perceptron
+- Mathematical inference on ESP32
+- Step activation function
+- Real-time serial debugging
+- LED hardware control through inference output
+- Active LOW hardware abstraction
+
+### Purpose
+- Understand embedded AI fundamentals
+- Learn inference vs training
+- Connect mathematical models to physical hardware
+- Build a modular TinyML-oriented learning platform
+
+### Planned Future Development
+- OR perceptron
+- Simple training algorithms
+- GPIO and sensor inputs
+- Servo motor output
+- Sensor fusion experiments
+- Raspberry Pi assisted training
+- TinyML exploration
+
+**Project page:**
+
+projects/tiny_perceptron_node/
+
+
+## Rover Platform — Robotics Hardware Lab
 
 A personal embedded robotics platform used as a **hardware testing and prototyping environment**.
+The platform remains important as a long-term robotics and embedded experimentation environment and may be redesigned in future iterations with improved mechanical and electronic architecture.
 
 ### Purpose
 - Low-level hardware validation
@@ -64,8 +106,9 @@ A personal embedded robotics platform used as a **hardware testing and prototypi
 - Debugging with Logic Analyzer
 - Rapid prototyping of embedded components
 
+
 ### Status
-⏸ Currently suspended to focus on SRM development
+Currently suspended while active development focuses on SRM and Tiny Perceptron Node.
 
 **Project page:**
 

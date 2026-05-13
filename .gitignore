@@ -1,1 +1,9 @@
-projects/rover_h533/firmware/esp32/ps5_test/
+# Rover temporary/generated files
+projects/rover_h533/firmware/CubeIde/
+projects/rover_h533/docs/*.pdf
+
+# Generic build/debug artifacts
+Debug/
+Release/
+*.launch
+*.ioc.bak
