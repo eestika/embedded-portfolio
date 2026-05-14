@@ -152,3 +152,14 @@ Features:
 - hardware abstraction layer
 - active LOW LED handling
 - serial debugging
+
+### esp32_perceptron_or_led
+
+Fixed-weight OR perceptron controlling real hardware output.
+
+Features:
+- OR inference with fixed weights
+- bias adjusted for OR logic
+- onboard LED control
+- active LOW LED abstraction
+- serial debugging

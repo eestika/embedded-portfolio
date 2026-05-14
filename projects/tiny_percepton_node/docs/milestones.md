@@ -93,12 +93,46 @@ Firmware:
 firmware/esp32_perceptron_and_led/
 ```
 
+# Milestone 3
+## Fixed-weight OR perceptron with LED output
+
+Status: Completed
+
+Description:
+
+Implemented an OR perceptron running on ESP32 WROVER-E.
+
+Current parameters:
+
+- w1 = 1.0
+- w2 = 1.0
+- bias = -0.5
+
+Validated truth table:
+
+| x1 | x2 | output | LED |
+|---|---|---|---|
+| 0 | 0 | 0 | OFF |
+| 0 | 1 | 1 | ON |
+| 1 | 0 | 1 | ON |
+| 1 | 1 | 1 | ON |
+
+Key concepts learned:
+
+- OR logic with perceptron
+- bias as decision threshold
+- same weights, different bias, different behavior
+- embedded inference controlling hardware
+
+Firmware:
+
+```text
+firmware/esp32_perceptron_or_led/
+```
+
 ---
 
 # Next Planned Milestones
-
-## Milestone 3
-OR perceptron
 
 ## Milestone 4
 Simple training algorithm
