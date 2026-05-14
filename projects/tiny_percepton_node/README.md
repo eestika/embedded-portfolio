@@ -141,9 +141,17 @@ Current perceptron experiments:
 - OR logic
 - Physical button interaction
 
+Milestone 4 completed:
+
+- Real GPIO button training
+- Perceptron learning rule implemented
+- Weights and bias updated automatically
+- Error-based correction validated through Serial Monitor
+
 Next milestone:
 
-- Simple training algorithm
+- Automatic training over full truth table
+- Weight persistence using ESP32 NVS
 
 ## Current Firmware Experiments
 
@@ -184,3 +192,15 @@ Features:
 - real-time inference
 - interactive hardware AI behavior
 - GPIO-to-inference pipeline
+
+### esp32_perceptron_training_buttons
+
+Perceptron training using real GPIO button inputs.
+
+Features:
+- physical button inputs
+- AND target logic
+- perceptron learning rule
+- automatic weight update
+- bias update
+- real-time training debug over Serial Monitor

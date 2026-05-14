@@ -178,12 +178,55 @@ Firmware:
 ```text
 firmware/esp32_perceptron_buttons_led/
 ```
+
 ---
 
-# Next Planned Milestones
+# Milestone 5
+## Real GPIO button training
 
-## Milestone 5
-GPIO button inputs
+Status: Completed
+
+Description:
+
+Implemented perceptron training using real physical GPIO button inputs.
+
+The ESP32 now updates weights and bias automatically using the perceptron learning rule.
+
+Implemented concepts:
+
+- physical button inputs
+- desired output
+- prediction output
+- error calculation
+- weight update
+- bias update
+- learning rate
+- real-time training debug
+
+Learning rule:
+
+```text
+error = desired - output
+w_new = w_old + learning_rate * error * input
+bias_new = bias_old + learning_rate * error
+```
+Hardware configuration:
+
+GPIO32 → Button 1
+GPIO33 → Button 2
+onboard LED output
+
+Observed result:
+
+After repeated button combinations, the perceptron converges toward correct AND behavior.
+
+```text
+firmware/esp32_perceptron_training_buttons/
+```
+---
+
+
+# Next Planned Milestones
 
 ## Milestone 6
 Sensor integration
