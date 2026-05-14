@@ -51,18 +51,21 @@ Fixed-weight AND perceptron
 Fixed-weight OR perceptron
 
 ## Milestone 3
-Simple training algorithm
+Real GPIO button inputs
 
 ## Milestone 4
-Real GPIO/sensor inputs
+Simple training algorithm
 
 ## Milestone 5
-LED/servo outputs
+Real sensor inputs
 
 ## Milestone 6
-Training on Raspberry Pi / inference on ESP32
+LED / servo outputs
 
 ## Milestone 7
+Training on Raspberry Pi / inference on ESP32
+
+## Milestone 8
 TinyML exploration
 
 ---
@@ -108,32 +111,39 @@ Additional long-term study notes and experimental learning material are maintain
 
 Milestone 1 completed:
 
-- PlatformIO ESP32 project created
-- Serial communication verified
-- Fixed-weight AND perceptron implemented
-- Inference validated through Serial Monitor
+- Fixed-weight AND perceptron
+- Serial inference validation
 
 Milestone 2 completed:
 
-- Perceptron connected to real hardware output
-- Onboard LED controlled by inference result
-- Active LOW hardware abstraction implemented
-- Real-time serial debugging added
+- Fixed-weight OR perceptron
+- LED hardware output
+- Bias threshold experimentation
 
-Current perceptron configuration:
+Milestone 3 completed:
 
-- w1 = 1.0
-- w2 = 1.0
-- bias = -1.5
+- Real GPIO button inputs
+- Physical interactive inference
+- INPUT_PULLUP button handling
+- Real-time hardware classification
 
-Current result:
+Current capabilities:
 
-The ESP32 is now capable of executing a minimal embedded AI inference pipeline controlling physical hardware.
+- Embedded inference on ESP32
+- GPIO input handling
+- LED hardware control
+- Serial debugging
+- Configurable perceptron logic
+
+Current perceptron experiments:
+
+- AND logic
+- OR logic
+- Physical button interaction
 
 Next milestone:
 
-- OR perceptron
-- simple training algorithm
+- Simple training algorithm
 
 ## Current Firmware Experiments
 
@@ -163,3 +173,14 @@ Features:
 - onboard LED control
 - active LOW LED abstraction
 - serial debugging
+
+### esp32_perceptron_buttons_led
+
+AND perceptron using real GPIO button inputs.
+
+Features:
+- physical button inputs
+- INPUT_PULLUP configuration
+- real-time inference
+- interactive hardware AI behavior
+- GPIO-to-inference pipeline

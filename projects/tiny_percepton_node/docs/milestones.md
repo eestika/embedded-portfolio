@@ -129,13 +129,58 @@ Firmware:
 ```text
 firmware/esp32_perceptron_or_led/
 ```
+---
 
+# Milestone 4
+## Real GPIO button inputs with AND perceptron
+
+Status: Completed
+
+Description:
+
+Implemented physical GPIO button inputs connected to the ESP32 perceptron.
+
+The perceptron now receives real hardware inputs instead of simulated software test cases.
+
+Hardware configuration:
+
+- GPIO32 → Button 1
+- GPIO33 → Button 2
+- onboard LED output
+
+Implemented concepts:
+
+- GPIO digital input
+- INPUT_PULLUP configuration
+- physical hardware interaction
+- real-time inference
+- interactive embedded AI behavior
+
+Validated behavior:
+
+| Button 1 | Button 2 | Output | LED |
+|---|---|---|---|
+| 0 | 0 | 0 | OFF |
+| 0 | 1 | 0 | OFF |
+| 1 | 0 | 0 | OFF |
+| 1 | 1 | 1 | ON |
+
+Key concepts learned:
+
+- GPIO input handling
+- embedded hardware interaction
+- pull-up resistors
+- physical input classification
+- cyber-physical embedded systems
+
+Firmware:
+
+```text
+firmware/esp32_perceptron_buttons_led/
+```
 ---
 
 # Next Planned Milestones
-
-## Milestone 4
-Simple training algorithm
 
 ## Milestone 5
 GPIO button inputs
